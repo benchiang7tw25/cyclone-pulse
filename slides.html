@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyclone Pulse — NASA Space Apps Challenge 2026 (7-Slide Deck)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800&family=SF+Pro+Text:wght@400;500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: #09090b;
+      color: #f5f5f7;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 0 60px;
+    }
+
+    /* Top Action Bar */
+    .top-toolbar {
+      position: sticky;
+      top: 16px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(28, 28, 30, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 10px 24px;
+      border-radius: 980px;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+    .top-toolbar span {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .btn-print {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 980px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-print:hover {
+      transform: scale(1.03);
+      opacity: 0.95;
+    }
+
+    /* 16:9 Standard Presentation Slide Frame */
+    .slide {
+      width: 1120px;
+      height: 630px;
+      background: #121214;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: 36px;
+      padding: 44px 56px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Subtle Ambient Gradient behind slide */
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: -120px;
+      right: -100px;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(100, 210, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+    }
+
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    .tagline {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64d2ff;
+      margin-bottom: 6px;
+    }
+    .slide-title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+    .slide-number {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(235, 235, 245, 0.45);
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 12px;
+      border-radius: 980px;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      gap: 36px;
+    }
+
+    .col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(28, 28, 30, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-text {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: rgba(235, 235, 245, 0.72);
+    }
+
+    .highlight-pill {
+      display: inline-block;
+      background: rgba(100, 210, 255, 0.15);
+      color: #64d2ff;
+      border: 1px solid rgba(100, 210, 255, 0.35);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 16px;
+    }
+    .stat-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .stat-label {
+      font-size: 11.5px;
+      color: rgba(235, 235, 245, 0.6);
+      margin-top: 4px;
+    }
+
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 16px;
+      font-size: 12px;
+      color: rgba(235, 235, 245, 0.45);
+    }
+
+    /* Print Styles: Save as PDF directly in 16:9 Landscape */
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      .top-toolbar {
+        display: none !important;
+      }
+      .slide {
+        page-break-after: always;
+        break-after: page;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Toolbar -->
+  <div class="top-toolbar">
+    <span>Cyclone Pulse — Official 7-Slide Presentation Deck</span>
+    <button class="btn-print" onclick="window.print()">Print / Save as PDF (Cmd + P)</button>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 1: Title & Challenge Hook
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">2026 NASA Space Apps Challenge · The Earth Information Jukebox</div>
+        <div class="slide-title">Cyclone Pulse</div>
+      </div>
+      <div class="slide-number">01 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col" style="flex: 1.3; justify-content: center;">
+        <h2 style="font-size: 28px; font-weight: 600; line-height: 1.35; margin-bottom: 16px; color: #ffffff;">
+          Translating NASA Earth Observations into an Interactive Typhoon Rhythm & Soundscape Game.
+        </h2>
+        <p style="font-size: 15px; line-height: 1.65; color: rgba(235, 235, 245, 0.75); margin-bottom: 24px;">
+          Traditional meteorological charts and isobaric data can be difficult for the public to interpret. <strong>Cyclone Pulse</strong> sonifies live storm physics—converting wind speed, atmospheric pressure, and cloud temperatures from 10 historic Taiwan-landfall typhoons into responsive 4/4 musical rhythm and studio acoustics.
+        </p>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-val">10</div>
+            <div class="stat-label">Historic Typhoons</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">4/4</div>
+            <div class="stat-label">Phase-Locked Beat</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">100%</div>
+            <div class="stat-label">Client-Side Web Audio</div>
+          </div>
+        </div>
+      </div>
+      <div class="col" style="flex: 0.9; justify-content: center;">
+        <div class="card" style="background: rgba(255, 255, 255, 0.04); border-color: rgba(100, 210, 255, 0.25);">
+          <div class="card-title"><span class="highlight-pill">LIVE URL</span> Instant Access</div>
+          <p class="card-text" style="word-break: break-all; margin-bottom: 12px;">
+            <strong>Demo:</strong> https://benchiang7tw25.github.io/cyclone-pulse/<br>
+            <strong>GitHub:</strong> https://github.com/benchiang7tw25/cyclone-pulse
+          </p>
+          <p class="card-text">
+            ✓ Zero installation required (Pure Vanilla HTML5 / Web Audio API)<br>
+            ✓ Apple Studio aesthetic with SF Pro typography
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Cyclone Pulse Team · 2026 NASA International Space Apps Challenge</span>
+      <span>Challenge: The Earth Information Jukebox</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 2: Problem & Solution
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">Challenge Context & Vision</div>
+        <div class="slide-title">Turning Raw Science into Engaging Experience</div>
+      </div>
+      <div class="slide-number">02 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card" style="border-left: 3px solid #ff453a;">
+          <div class="card-title">The Problem: High Barrier to Earth Data</div>
+          <p class="card-text">
+            While NASA collects petabytes of atmospheric and oceanic data, general audiences rarely interact with raw telemetry. Scientific diagrams, cloud-top infrared temperatures, and barometric curves remain abstract and disconnected from sensory experience.
+          </p>
+        </div>
+        <div class="card" style="border-left: 3px solid #64d2ff;">
+          <div class="card-title">Our Solution: Real-Time Data Sonification</div>
+          <p class="card-text">
+            Cyclone Pulse bridges Earth observation and musical rhythm. Players navigate genuine historical storm paths across Taiwan, feeling the intensity of wind shear through tempo changes and pressure through bass depth, making planetary science directly audible.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="height: 100%; justify-content: center;">
+          <div class="card-title">Key Innovation Highlights</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; color: rgba(235, 235, 245, 0.78); line-height: 1.55;">
+            <li>🌪️ <strong>10 Real Taiwan Typhoons:</strong> Includes exact landfall timestamps (YYYY-MM-DD HH:mm), coordinates, and true NASA satellite clouds.</li>
+            <li>🎵 <strong>4 Spatial Performance Instruments:</strong> Players freely play Celeste Bell, Warm Rhodes, Kalimba, or Analog Strings.</li>
+            <li>🎧 <strong>Automated Personal .WAV Export:</strong> Offline synthesis renders a unique soundtrack combining storm telemetry and the user's performance.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Problem Definition & Value Proposition</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 3: NASA Earth Data Integration
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">Official NASA Resources</div>
+        <div class="slide-title">NASA Data Integration & Scientific Sources</div>
+      </div>
+      <div class="slide-number">03 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card">
+          <div class="card-title">NASA Earth Observatory (Terra, Aqua, Suomi NPP)</div>
+          <p class="card-text">
+            MODIS and VIIRS high-resolution true-color imagery provide the geographic base of Taiwan and 10 distinct satellite cloud vortex textures.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">NASA SVS #5669 & #4960 (Atmospheric Physics)</div>
+          <p class="card-text">
+            GEOS-FP global aerosols, IMERG atmospheric rivers, and precipitation rates inform the wind-speed sound curves and filter modulation.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-title">NASA SVS #5313, #3912 & #4950 (Environmental Context)</div>
+          <p class="card-text">
+            Black Marble night lights, ECCO2 Kuroshio sea surface temperatures, and GEDI forest canopy heights provide realistic terrain interaction.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">NASA GIBS & Worldview (EPSG:4326 GIS)</div>
+          <p class="card-text">
+            WGS84 projection coordinates (117.5°E–126.5°E, 19.3°N–26.7°N) allow typhoon centers to trace exact real-world landfall vectors.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>NASA Space Apps Resources Compliance</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 4: Scientific Sonification & Rhythm
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">Acoustic & Physics Architecture</div>
+        <div class="slide-title">Data-Driven Sonification & Phase-Locked Rhythm</div>
+      </div>
+      <div class="slide-number">04 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card">
+          <div class="card-title">💨 Wind Speed (m/s) ➔ Tempo (68–172 RPM)</div>
+          <p class="card-text">
+            Wind speed dynamically regulates musical tempo and storm motion. Outer bands (18 m/s) glide at 0.4x speed / 76 RPM, while peak landfall (55 m/s) sprints at 2.4x speed / 168 RPM with high-tension 16th-note shaker rhythms.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">🌀 Central Pressure (hPa) ➔ Sub-Bass Resonance</div>
+          <p class="card-text">
+            Deep low-pressure centers (down to 905 hPa) directly modulate low-pass filter cutoff frequencies, driving resonant analog sub-bass drones and stereo reverb.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-title">⏱️ 4/4 Phase-Locked Master Clock</div>
+          <p class="card-text">
+            A continuous musical clock synchronizes audio and canvas frames. Each 4/4 bar features four structured beats:
+          </p>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+            <div style="background: rgba(255,255,255,0.06); padding: 8px; border-radius: 8px;"><strong>Beat 1 (Downbeat):</strong> Heavy Kick + Sub-Bass + Bell</div>
+            <div style="background: rgba(255,255,255,0.06); padding: 8px; border-radius: 8px;"><strong>Beat 2 (Backbeat):</strong> Crisp Snare / Rim Clap</div>
+            <div style="background: rgba(255,255,255,0.06); padding: 8px; border-radius: 8px;"><strong>Beat 3 (Driving):</strong> Double Kick Propulsion</div>
+            <div style="background: rgba(255,255,255,0.06); padding: 8px; border-radius: 8px;"><strong>Beat 4 (Turnaround):</strong> 16th-note Fill</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Sonification Engineering & Rhythm Design</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 5: 4 Instruments & Gameplay UI
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">User Interface & Musical Expression</div>
+        <div class="slide-title">Apple-Inspired Glass UI & 4 Directional Instruments</div>
+      </div>
+      <div class="slide-number">05 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card">
+          <div class="card-title">Free-Choice Directional Instruments</div>
+          <p class="card-text" style="margin-bottom: 12px;">
+            Players can hit any arrow key whenever a white ring contracts onto the eye—as long as the beat is on time, they score!
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+            <div><strong>↑ Celeste Bell:</strong> Crystal high-pitch overtones and chime harmonics</div>
+            <div><strong>← Warm Rhodes:</strong> Lush jazz 7th chord arpeggiations</div>
+            <div><strong>→ Kalimba Pluck:</strong> Woody tactile pentatonic percussion</div>
+            <div><strong>↓ Analog Strings:</strong> Warm analog mid-range sustain and octave resonance</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-title">Clean, Unobstructed Apple Glass HUD</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: rgba(235, 235, 245, 0.75);">
+            <li>✓ <strong>Left Weather & Speed Column:</strong> Displays live Wind Speed (m/s), Pressure (hPa), RPM, and 1-2-3-4 Beat LEDs.</li>
+            <li>✓ <strong>100% Unobstructed Track View:</strong> The instrument dock is integrated into the left sidebar over the mainland, leaving the Taiwan strait and southern Bashi Channel tracks completely visible.</li>
+            <li>✓ <strong>Responsive Canvas:</strong> Perfectly scales across high-DPI Mac Retina displays and standard mobile views.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Player Interaction & UI Architecture</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 6: Automated Personalized WAV Engine
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">Audio Synthesis Engine</div>
+        <div class="slide-title">Offline Audio Synthesis & Personalized .WAV Export</div>
+      </div>
+      <div class="slide-number">06 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card">
+          <div class="card-title">Automated OfflineAudioContext Pipeline</div>
+          <p class="card-text">
+            When a stage concludes, the system triggers a background <code>OfflineAudioContext</code> pipeline (44.1 kHz, 16-bit stereo) that calculates the exact meteorological trajectory alongside the player's recorded instrument inputs.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">Zero Identical Tracks</div>
+          <p class="card-text">
+            Because each typhoon has unique pressure and wind profiles, and every player chooses different directional instruments, every generated track is a personalized piece of meteorological music.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="height: 100%; justify-content: center;">
+          <div class="card-title">Studio-Grade Audio Features</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; color: rgba(235, 235, 245, 0.78);">
+            <li>🎛️ <strong>Dynamics Compressor:</strong> Tight punchy master bus dynamics (-12 dB threshold, 4:1 ratio).</li>
+            <li>🏛️ <strong>Impulse Convolver Reverb:</strong> 1.8-second simulated hall acoustic space.</li>
+            <li>🎚️ <strong>Stereo Ping-Pong Delay:</strong> 250ms left / 375ms right tempo-synced delay tails.</li>
+            <li>💾 <strong>Lossless .WAV Generator:</strong> Instant in-browser binary WAV encoding with one-click download.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Audio Synthesis & Export Engine</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SLIDE 7: Impact, Innovation & Links
+       ========================================== -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="tagline">Impact & Open Source</div>
+        <div class="slide-title">Educational Impact, Public Value & Project Links</div>
+      </div>
+      <div class="slide-number">07 / 07</div>
+    </div>
+    <div class="slide-body">
+      <div class="col">
+        <div class="card">
+          <div class="card-title">Empowering Climate & Disaster Education</div>
+          <p class="card-text">
+            By transforming abstract numbers into visceral rhythm and harmony, Cyclone Pulse helps students and the public intuitively understand typhoon intensity, rapid intensification, and landfall deceleration.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">Art & Technology Synthesis</div>
+          <p class="card-text">
+            Honoring NASA's Earth Information Jukebox challenge by proving that scientific satellite telemetry can be a rich, expressive medium for musical creativity.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="height: 100%; justify-content: center; background: rgba(100, 210, 255, 0.08); border-color: rgba(100, 210, 255, 0.3);">
+          <div class="card-title" style="color: #64d2ff;">Project Links & Verification</div>
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px; margin-top: 10px;">
+            <div>
+              <strong>🌐 Live Demo:</strong><br>
+              <a href="https://benchiang7tw25.github.io/cyclone-pulse/" target="_blank" style="color: #ffffff; text-decoration: underline;">https://benchiang7tw25.github.io/cyclone-pulse/</a>
+            </div>
+            <div>
+              <strong>📂 GitHub Repository:</strong><br>
+              <a href="https://github.com/benchiang7tw25/cyclone-pulse" target="_blank" style="color: #ffffff; text-decoration: underline;">https://github.com/benchiang7tw25/cyclone-pulse</a>
+            </div>
+            <div>
+              <strong>📊 7-Slide Deck (Web View):</strong><br>
+              <a href="https://benchiang7tw25.github.io/cyclone-pulse/slides.html" target="_blank" style="color: #ffffff; text-decoration: underline;">https://benchiang7tw25.github.io/cyclone-pulse/slides.html</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>2026 NASA International Space Apps Challenge · The Earth Information Jukebox</span>
+      <span>Cyclone Pulse</span>
+    </div>
+  </div>
+
+</body>
+</html>
