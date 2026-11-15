@@ -18,6 +18,7 @@
       <header class="apple-toolbar">
         <div class="toolbar-title">Cyclone Pulse</div>
         <div class="toolbar-actions">
+          <button id="btnLangToggle" class="capsule-btn" type="button">🌐 English</button>
           <button id="btnOpenRules" class="capsule-btn" type="button">規則</button>
           <button id="btnMuteSelect" class="capsule-btn" type="button">聲音：開啟</button>
         </div>
@@ -36,22 +37,22 @@
 
           <div class="weather-widgets">
             <div class="w-tile">
-              <span class="w-label">最大風速</span>
+              <span id="lblHeroWind" class="w-label">最大風速</span>
               <div class="w-value"><span id="heroWind">48</span> <small>m/s</small></div>
             </div>
             <div class="w-tile">
-              <span class="w-label">中心氣壓</span>
+              <span id="lblHeroPressure" class="w-label">中心氣壓</span>
               <div class="w-value"><span id="heroPressure">930</span> <small>hPa</small></div>
             </div>
             <div class="w-tile">
-              <span class="w-label">登陸地點</span>
+              <span id="lblHeroLandfall" class="w-label">登陸地點</span>
               <div id="heroLandfall" class="w-value w-value-text">屏東縣恆春鎮</div>
             </div>
           </div>
 
           <div class="spotlight-cta-row">
             <button id="btnStartStage" class="apple-primary-pill" type="button">
-              <span class="play-icon">▶</span> 開始體驗
+              <span class="play-icon">▶</span> <span id="btnStartStageText">開始體驗</span>
             </button>
           </div>
         </div>
@@ -59,17 +60,17 @@
         <div class="spotlight-media">
           <div class="media-card">
             <img id="heroSatImg" src="assets/typhoon_fung_wong.jpg" alt="衛星影像" />
-            <span class="media-label">衛星雲圖</span>
+            <span id="lblSatMedia" class="media-label">衛星雲圖</span>
           </div>
           <div class="media-card">
             <canvas id="heroTrackPreview" width="200" height="200"></canvas>
-            <span class="media-label">侵台路徑</span>
+            <span id="lblTrackMedia" class="media-label">侵台路徑</span>
           </div>
         </div>
       </div>
 
       <!-- 10 個登陸台灣的歷史颱風列表 -->
-      <div class="shelf-header">歷史登陸颱風</div>
+      <div id="shelfHeaderTitle" class="shelf-header">歷史登陸颱風</div>
       <div id="typhoonGrid" class="typhoon-shelf"></div>
     </div>
   </section>
@@ -78,25 +79,25 @@
   <div id="rulesModal" class="sheet-backdrop" aria-hidden="true">
     <div class="apple-sheet">
       <div class="sheet-header">
-        <h2>遊玩方式</h2>
+        <h2 id="rulesModalTitle">遊玩方式</h2>
         <button id="btnCloseRulesTop" class="sheet-close" type="button">✕</button>
       </div>
       <div class="sheet-list">
         <div class="sheet-row">
-          <div class="sheet-row-title">跟隨節拍圈，自由選擇四種音色</div>
-          <div class="sheet-row-desc">
+          <div id="ruleRowTitle1" class="sheet-row-title">跟隨節拍圈，自由選擇四種音色</div>
+          <div id="ruleRowDesc1" class="sheet-row-desc">
             當白色節拍圈收縮至颱風眼中心時，<strong>只要拍點對就得分</strong>。你可以自由按下 <strong>↑（水晶鐘琴）</strong>、<strong>←（溫暖電鋼琴）</strong>、<strong>→（空靈拇指琴）</strong> 或 <strong>↓（合成弦樂）</strong> 演奏不同音色。
           </div>
         </div>
         <div class="sheet-row">
-          <div class="sheet-row-title">風速 (m/s) 與 RPM 節奏速度</div>
-          <div class="sheet-row-desc">
+          <div id="ruleRowTitle2" class="sheet-row-title">風速 (m/s) 與 RPM 節奏速度</div>
+          <div id="ruleRowDesc2" class="sheet-row-desc">
             畫面左側會即時顯示颱風最大風速（m/s）、大氣壓力（hPa）以及當前的<strong>節奏速度（RPM）</strong>與節拍指示燈。
           </div>
         </div>
         <div class="sheet-row">
-          <div class="sheet-row-title">自動產出個人化 Demo 音訊</div>
-          <div class="sheet-row-desc">
+          <div id="ruleRowTitle3" class="sheet-row-title">自動產出個人化 Demo 音訊</div>
+          <div id="ruleRowDesc3" class="sheet-row-desc">
             觀測結束後，系統會根據颱風路徑數據與你本局選擇的四種音色，自動合成專屬的 Demo 音樂供試聽與下載。
           </div>
         </div>
@@ -122,6 +123,7 @@
       <header class="apple-toolbar">
         <div id="resTyphoonTitle" class="toolbar-title">鳳凰颱風</div>
         <div class="toolbar-actions">
+          <button id="btnLangToggleResult" class="capsule-btn" type="button">🌐 English</button>
           <button id="btnReplaySame" class="capsule-btn" type="button">再玩一次</button>
           <button id="btnBackToSelect" class="capsule-btn capsule-btn-light" type="button">所有颱風</button>
         </div>
@@ -130,17 +132,17 @@
       <div class="result-columns">
         <!-- 左欄：成績與簡潔點評 -->
         <div class="apple-panel">
-          <div class="panel-heading">表現摘要</div>
+          <div id="lblPerfHeading" class="panel-heading">表現摘要</div>
 
           <div class="summary-score-row">
             <div id="resRankBadge" class="summary-rank">S</div>
             <div class="summary-main-score">
-              <span class="sms-label">分數</span>
+              <span id="lblSmsScore" class="sms-label">分數</span>
               <strong id="resScoreVal" class="sms-val">0</strong>
             </div>
             <div class="summary-side-stats">
-              <div>最大連擊 <strong id="resMaxCombo">0</strong></div>
-              <div>節拍準確率 <strong id="resAccuracy">100%</strong></div>
+              <div><span id="lblMaxCombo">最大連擊</span> <strong id="resMaxCombo">0</strong></div>
+              <div><span id="lblAccuracy">節拍準確率</span> <strong id="resAccuracy">100%</strong></div>
             </div>
           </div>
 
@@ -156,7 +158,7 @@
 
         <!-- 右欄：自動產出 Demo 音樂 -->
         <div class="apple-panel">
-          <div class="panel-heading">專屬氣象聲景 Demo</div>
+          <div id="lblDemoHeading" class="panel-heading">專屬氣象聲景 Demo</div>
           <p id="resAutoMusicDesc" class="demo-caption">
             已根據本場颱風氣壓、風速與你演奏的四向音色自動合成。
           </p>

@@ -27,6 +27,9 @@ class CyclonePulseApp {
     this.typhoons = window.TYPHOON_DATASETS || [];
     this.selectedTyphoon = this.typhoons[0];
 
+    // 多語言支援：預設為 'EN'（國際評審友善），可隨時點擊切換為 'ZH'（繁體中文）
+    this.currentLang = 'EN';
+
     this.currentScreen = 'SELECT';
 
     // 遊戲時間與節拍狀態 (38 秒走完完整路徑)
@@ -43,10 +46,10 @@ class CyclonePulseApp {
 
     // 四種方向音色定義（玩家自由選擇，只要節拍對就得分）
     this.instruments = [
-      { dir: 'UP', keyLabel: '↑', name: '水晶鐘琴', sub: 'Celeste Bell' },
-      { dir: 'LEFT', keyLabel: '←', name: '溫暖電鋼琴', sub: 'Warm Rhodes' },
-      { dir: 'RIGHT', keyLabel: '→', name: '空靈拇指琴', sub: 'Kalimba' },
-      { dir: 'DOWN', keyLabel: '↓', name: '合成弦樂', sub: 'Analog Strings' }
+      { dir: 'UP', keyLabel: '↑', nameZh: '水晶鐘琴', nameEn: 'Celeste Bell', subZh: '高音泛音', subEn: 'Chime Overtones' },
+      { dir: 'LEFT', keyLabel: '←', nameZh: '溫暖電鋼琴', nameEn: 'Warm Rhodes', subZh: '柔和七和弦', subEn: 'Lush 7th Chords' },
+      { dir: 'RIGHT', keyLabel: '→', nameZh: '空靈拇指琴', nameEn: 'Kalimba Pluck', subZh: '木質彈撥', subEn: 'Woody Percussion' },
+      { dir: 'DOWN', keyLabel: '↓', nameZh: '合成弦樂', nameEn: 'Analog Strings', subZh: '溫暖弦樂', subEn: 'Warm Resonance' }
     ];
     this.activeInstrumentDir = 'UP';
     this.instrumentFlashTime = { UP: 0, LEFT: 0, RIGHT: 0, DOWN: 0 };
@@ -54,7 +57,7 @@ class CyclonePulseApp {
     this.beatRings = [];
     this.particles = [];
     this.floatingTexts = [];
-    this.lastJudgment = { text: '就緒', sub: '節拍圈收縮至中心時，任選 ↑ ↓ ← → 演奏', time: 0 };
+    this.lastJudgment = { text: 'Ready', sub: 'Hit ↑ ↓ ← → on beat to play', time: 0 };
 
     this.score = 0;
     this.combo = 0;
@@ -82,9 +85,80 @@ class CyclonePulseApp {
     this._initSelectScreen();
     this._bindEvents();
     this._resizeGameCanvas();
+    this._updateLanguageUI();
 
     this.lastFrameTime = performance.now();
     requestAnimationFrame((ts) => this._loop(ts));
+  }
+
+  toggleLanguage() {
+    this.currentLang = this.currentLang === 'EN' ? 'ZH' : 'EN';
+    this._updateLanguageUI();
+    this._initSelectScreen();
+    this._updateHeroBanner();
+  }
+
+  _updateLanguageUI() {
+    const isEn = this.currentLang === 'EN';
+    const langBtnText = isEn ? '🌐 EN / 中文' : '🌐 中文 / EN';
+    const toggleBtn1 = document.getElementById('btnLangToggle');
+    const toggleBtn2 = document.getElementById('btnLangToggleResult');
+    if (toggleBtn1) toggleBtn1.textContent = langBtnText;
+    if (toggleBtn2) toggleBtn2.textContent = langBtnText;
+
+    // 關卡畫面標籤
+    const el = (id) => document.getElementById(id);
+    if (el('btnOpenRules')) el('btnOpenRules').textContent = isEn ? 'Rules' : '規則';
+    if (el('btnMuteSelect')) {
+      el('btnMuteSelect').textContent = this.audio.isMuted
+        ? (isEn ? 'Sound: Muted' : '聲音：靜音')
+        : (isEn ? 'Sound: ON' : '聲音：開啟');
+    }
+    if (el('lblHeroWind')) el('lblHeroWind').textContent = isEn ? 'MAX WIND' : '最大風速';
+    if (el('lblHeroPressure')) el('lblHeroPressure').textContent = isEn ? 'PRESSURE' : '中心氣壓';
+    if (el('lblHeroLandfall')) el('lblHeroLandfall').textContent = isEn ? 'LANDFALL' : '登陸地點';
+    if (el('btnStartStageText')) el('btnStartStageText').textContent = isEn ? 'Start Experience' : '開始體驗';
+    if (el('lblSatMedia')) el('lblSatMedia').textContent = isEn ? 'Satellite Imagery' : '衛星雲圖';
+    if (el('lblTrackMedia')) el('lblTrackMedia').textContent = isEn ? 'Landfall Track' : '侵台路徑';
+    if (el('shelfHeaderTitle')) el('shelfHeaderTitle').textContent = isEn ? 'Historical Landfall Typhoons' : '歷史登陸颱風';
+
+    // 規則視窗
+    if (el('rulesModalTitle')) el('rulesModalTitle').textContent = isEn ? 'How to Play' : '遊玩方式';
+    if (el('ruleRowTitle1')) el('ruleRowTitle1').textContent = isEn ? 'Follow the Beat, Choose 4 Instruments Freely' : '跟隨節拍圈，自由選擇四種音色';
+    if (el('ruleRowDesc1')) {
+      el('ruleRowDesc1').innerHTML = isEn
+        ? 'When the white ring contracts to the typhoon eye, <strong>any hit on beat scores!</strong> Freely press <strong>↑ (Celeste Bell)</strong>, <strong>← (Warm Rhodes)</strong>, <strong>→ (Kalimba)</strong>, or <strong>↓ (Analog Strings)</strong>.'
+        : '當白色節拍圈收縮至颱風眼中心時，<strong>只要拍點對就得分</strong>。你可以自由按下 <strong>↑（水晶鐘琴）</strong>、<strong>←（溫暖電鋼琴）</strong>、<strong>→（空靈拇指琴）</strong> 或 <strong>↓（合成弦樂）</strong> 演奏不同音色。';
+    }
+    if (el('ruleRowTitle2')) el('ruleRowTitle2').textContent = isEn ? 'Wind Speed (m/s) & RPM Tempo' : '風速 (m/s) 與 RPM 節奏速度';
+    if (el('ruleRowDesc2')) {
+      el('ruleRowDesc2').innerHTML = isEn
+        ? 'The left HUD shows real-time Wind Speed (m/s), Pressure (hPa), and <strong>rhythmic tempo (RPM)</strong> with dynamic beat LEDs.'
+        : '畫面左側會即時顯示颱風最大風速（m/s）、大氣壓力（hPa）以及當前的<strong>節奏速度（RPM）</strong>與節拍指示燈。';
+    }
+    if (el('ruleRowTitle3')) el('ruleRowTitle3').textContent = isEn ? 'Automated Personalized Demo Audio' : '自動產出個人化 Demo 音訊';
+    if (el('ruleRowDesc3')) {
+      el('ruleRowDesc3').innerHTML = isEn
+        ? 'Upon finishing, the system automatically synthesizes a studio-grade .WAV demo embedding the typhoon telemetry and your instrument choices.'
+        : '觀測結束後，系統會根據颱風路徑數據與你本局選擇的四種音色，自動合成專屬的 Demo 音樂供試聽與下載。';
+    }
+    if (el('btnCloseRules')) el('btnCloseRules').textContent = isEn ? 'Done' : '完成';
+
+    // 結算畫面
+    if (el('btnReplaySame')) el('btnReplaySame').textContent = isEn ? 'Play Again' : '再玩一次';
+    if (el('btnBackToSelect')) el('btnBackToSelect').textContent = isEn ? 'All Typhoons' : '所有颱風';
+    if (el('lblPerfHeading')) el('lblPerfHeading').textContent = isEn ? 'Performance Summary' : '表現摘要';
+    if (el('lblSmsScore')) el('lblSmsScore').textContent = isEn ? 'Score' : '分數';
+    if (el('lblMaxCombo')) el('lblMaxCombo').textContent = isEn ? 'Max Combo' : '最大連擊';
+    if (el('lblAccuracy')) el('lblAccuracy').textContent = isEn ? 'Accuracy' : '節拍準確率';
+    if (el('lblDemoHeading')) el('lblDemoHeading').textContent = isEn ? 'Atmospheric Soundscape Demo' : '專屬氣象聲景 Demo';
+    if (el('resAutoMusicDesc')) {
+      el('resAutoMusicDesc').textContent = isEn
+        ? 'Automatically synthesized from storm pressure, wind speed, and your 4-way instrument inputs.'
+        : '已根據本場颱風氣壓、風速與你演奏的四向音色自動合成。';
+    }
+    if (el('btnRegenerateMusic')) el('btnRegenerateMusic').textContent = isEn ? 'New Arrangement' : '換一版編曲';
+    if (el('btnDownloadWav')) el('btnDownloadWav').textContent = isEn ? 'Download Audio (.WAV)' : '下載音訊 (.WAV)';
   }
 
   _initAssets() {
@@ -168,20 +242,27 @@ class CyclonePulseApp {
   _initSelectScreen() {
     const grid = document.getElementById('typhoonGrid');
     grid.innerHTML = '';
+    const isEn = this.currentLang === 'EN';
 
     this.typhoons.forEach((ty) => {
       const card = document.createElement('div');
       card.className = `ty-card ${ty.id === this.selectedTyphoon.id ? 'active' : ''}`;
       card.dataset.id = ty.id;
 
-      const dateOnly = (ty.landfallDateZh || ty.landfallDate).split(' ')[0];
+      const dateOnly = isEn
+        ? ty.landfallDate.split(' ')[0]
+        : (ty.landfallDateZh || ty.landfallDate).split(' ')[0];
+
+      const locName = isEn ? ty.landfallLocationEn || ty.landfallLocation : ty.landfallLocation;
+      const primaryName = isEn ? ty.nameEn : ty.nameZh;
+      const subName = isEn ? `${ty.year} · ${ty.intensityLabelEn || 'Typhoon'}` : ty.nameEn;
 
       card.innerHTML = `
         <div class="ty-card-top">
-          <span class="ty-card-name">${ty.nameZh}</span>
-          <span class="ty-card-year">${ty.nameEn}</span>
+          <span class="ty-card-name">${primaryName}</span>
+          <span class="ty-card-year">${subName}</span>
         </div>
-        <div class="ty-card-date">${dateOnly} · ${ty.landfallLocation}</div>
+        <div class="ty-card-date">${dateOnly} · ${locName}</div>
         <div class="ty-card-metrics">
           <span>${ty.maxWindMs} m/s</span>
           <span>${ty.minPressureHpa} hPa</span>
@@ -209,6 +290,7 @@ class CyclonePulseApp {
   _updateHeroBanner() {
     const ty = this.selectedTyphoon;
     if (!ty) return;
+    const isEn = this.currentLang === 'EN';
 
     const embeddedUri = window.NASA_ASSET_DATA_URIS && window.NASA_ASSET_DATA_URIS[ty.satelliteSwath];
     const imgSrc = embeddedUri || ty.satelliteSwath;
@@ -221,13 +303,21 @@ class CyclonePulseApp {
       wallpaper.style.backgroundImage = `url("${imgSrc}")`;
     }
 
-    document.getElementById('heroName').textContent = `${ty.nameZh} ${ty.nameEn}`;
-    document.getElementById('heroIntensity').textContent = ty.intensityLabel;
-    document.getElementById('heroLandfallTime').textContent = `${ty.landfallDateZh || ty.landfallDate} 登陸${ty.landfallLocation}`;
+    const titleStr = isEn ? `${ty.nameEn} Typhoon` : `${ty.nameZh} ${ty.nameEn}`;
+    const intensityStr = isEn ? ty.intensityLabelEn || 'Moderate Typhoon' : ty.intensityLabel;
+    const dateStr = isEn
+      ? `${ty.landfallDate} Landfall at ${ty.landfallLocationEn || ty.landfallLocation}`
+      : `${ty.landfallDateZh || ty.landfallDate} 登陸${ty.landfallLocation}`;
+    const introStr = isEn ? ty.introEn || ty.intro : ty.intro;
+    const locStr = isEn ? ty.landfallLocationEn || ty.landfallLocation : ty.landfallLocation;
+
+    document.getElementById('heroName').textContent = titleStr;
+    document.getElementById('heroIntensity').textContent = intensityStr;
+    document.getElementById('heroLandfallTime').textContent = dateStr;
     document.getElementById('heroWind').textContent = `${ty.maxWindMs}`;
     document.getElementById('heroPressure').textContent = `${ty.minPressureHpa}`;
-    document.getElementById('heroLandfall').textContent = ty.landfallLocation;
-    document.getElementById('heroIntro').textContent = ty.intro;
+    document.getElementById('heroLandfall').textContent = locStr;
+    document.getElementById('heroIntro').textContent = introStr;
 
     this._drawHeroTrackPreview();
   }
@@ -407,6 +497,7 @@ class CyclonePulseApp {
   }
 
   _buildCritiqueText(ty, rank, accuracy, maxCombo) {
+    const isEn = this.currentLang === 'EN';
     const counts = { UP: 0, LEFT: 0, RIGHT: 0, DOWN: 0 };
     this.playerHitLog.forEach((h) => {
       if (counts[h.direction] !== undefined) counts[h.direction] += 1;
@@ -414,13 +505,23 @@ class CyclonePulseApp {
 
     const favDir = Object.keys(counts).reduce((a, b) => (counts[a] >= counts[b] ? a : b), 'UP');
     const instNames = {
-      UP: '水晶鐘琴',
-      LEFT: '溫暖電鋼琴',
-      RIGHT: '空靈拇指琴',
-      DOWN: '合成弦樂'
+      UP: isEn ? 'Celeste Bell' : '水晶鐘琴',
+      LEFT: isEn ? 'Warm Rhodes' : '溫暖電鋼琴',
+      RIGHT: isEn ? 'Kalimba Pluck' : '空靈拇指琴',
+      DOWN: isEn ? 'Analog Strings' : '合成弦樂'
     };
 
-    const dateStr = ty.landfallDateZh || ty.landfallDate;
+    const dateStr = isEn ? ty.landfallDate : (ty.landfallDateZh || ty.landfallDate);
+    const locStr = isEn ? (ty.landfallLocationEn || ty.landfallLocation) : ty.landfallLocation;
+    const tyName = isEn ? ty.nameEn : ty.nameZh;
+
+    if (isEn) {
+      if (rank === 'S' || rank === 'A') {
+        return `During the meteorological tracking of Typhoon ${tyName} (landfall on ${dateStr} at ${locStr}, peak wind ${ty.maxWindMs} m/s), you achieved ${accuracy}% beat accuracy with a ${maxCombo} combo, composing an evocative atmospheric soundscape spotlighting the "${instNames[favDir]}".`;
+      }
+      return `Soundscape observation of Typhoon ${tyName} (landfall on ${dateStr} at ${locStr}, central pressure ${ty.minPressureHpa} hPa) is complete. The system has automatically synthesized your performance across "${instNames[favDir]}" and other instruments into the demo soundtrack.`;
+    }
+
     if (rank === 'S' || rank === 'A') {
       return `你在 ${ty.nameZh}（${dateStr} 登陸${ty.landfallLocation}，最大風速 ${ty.maxWindMs} m/s）的路徑觀測中達成 ${accuracy}% 節拍準確率與 ${maxCombo} 連擊，並以「${instNames[favDir]}」為主軸譜出了極具個人風格的氣象聲景。`;
     }
@@ -429,11 +530,12 @@ class CyclonePulseApp {
 
   async _autoGenerateDemoMusic() {
     const ty = this.selectedTyphoon;
+    const isEn = this.currentLang === 'EN';
     const statusEl = document.getElementById('trackStatusLabel');
     const descEl = document.getElementById('resAutoMusicDesc');
     const playerEl = document.getElementById('resultAudioPlayer');
 
-    statusEl.textContent = '正在合成...';
+    statusEl.textContent = isEn ? 'Synthesizing...' : '正在合成...';
 
     const effectiveHits =
       this.playerHitLog.length >= 4
@@ -449,7 +551,9 @@ class CyclonePulseApp {
     this.generatedWav = res;
     playerEl.src = res.url;
 
-    descEl.textContent = `已結合 ${ty.nameZh} 的實測風速 (${ty.maxWindMs} m/s)、氣壓 (${ty.minPressureHpa} hPa) 與你本局演奏的 ${this.playerHitLog.length} 個四向音色音符自動生成。`;
+    descEl.textContent = isEn
+      ? `Synthesized from Typhoon ${ty.nameEn}'s wind speed (${ty.maxWindMs} m/s), pressure (${ty.minPressureHpa} hPa), and your ${this.playerHitLog.length} performance notes.`
+      : `已結合 ${ty.nameZh} 的實測風速 (${ty.maxWindMs} m/s)、氣壓 (${ty.minPressureHpa} hPa) 與你本局演奏的 ${this.playerHitLog.length} 個四向音色音符自動生成。`;
     statusEl.textContent = `${res.filename}`;
 
     this._drawWaveform(res.waveformPeaks, effectiveHits);
@@ -530,6 +634,12 @@ class CyclonePulseApp {
 
   _bindEvents() {
     window.addEventListener('resize', () => this._resizeGameCanvas());
+
+    const toggleLangHandler = () => this.toggleLanguage();
+    const btnL1 = document.getElementById('btnLangToggle');
+    const btnL2 = document.getElementById('btnLangToggleResult');
+    if (btnL1) btnL1.addEventListener('click', toggleLangHandler);
+    if (btnL2) btnL2.addEventListener('click', toggleLangHandler);
 
     const rulesModal = document.getElementById('rulesModal');
     const openRules = () => rulesModal.classList.add('open');
@@ -1075,6 +1185,7 @@ class CyclonePulseApp {
    */
   _drawAppleGameHUD(ctx, w, h, state) {
     const ty = this.selectedTyphoon;
+    const isEn = this.currentLang === 'EN';
     const rpm = (this.audio.params && this.audio.params.rpm) || 116;
     const moveMult = this.currentMoveSpeedMult || 1.0;
     const activeBeat = this.currentBeatInBar || 1;
@@ -1100,17 +1211,17 @@ class CyclonePulseApp {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
     ctx.font = '600 20px -apple-system, sans-serif';
-    ctx.fillText(`${ty.nameZh}`, lx + 22, ly + 34);
+    ctx.fillText(isEn ? `${ty.nameEn}` : `${ty.nameZh}`, lx + 22, ly + 34);
 
     ctx.fillStyle = 'rgba(235, 235, 245, 0.6)';
     ctx.font = '400 12.5px -apple-system, sans-serif';
-    ctx.fillText(`${state.phase}`, lx + 22, ly + 54);
+    ctx.fillText(isEn ? 'Tracking Vector' : `${state.phase}`, lx + 22, ly + 54);
 
     // 風速 m/s 與 氣壓 hPa
     ctx.fillStyle = 'rgba(235, 235, 245, 0.45)';
     ctx.font = '500 11.5px -apple-system, sans-serif';
-    ctx.fillText('最大風速', lx + 22, ly + 80);
-    ctx.fillText('中心氣壓', lx + 140, ly + 80);
+    ctx.fillText(isEn ? 'MAX WIND' : '最大風速', lx + 22, ly + 80);
+    ctx.fillText(isEn ? 'PRESSURE' : '中心氣壓', lx + 140, ly + 80);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '600 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
@@ -1136,8 +1247,8 @@ class CyclonePulseApp {
     // 遊戲速度 RPM 與 颱風移速倍率 雙欄對比顯示
     ctx.fillStyle = 'rgba(235, 235, 245, 0.5)';
     ctx.font = '500 11.5px -apple-system, sans-serif';
-    ctx.fillText('音樂節奏 (RPM)', lx + 22, ly + 146);
-    ctx.fillText('颱風移速倍率', lx + 140, ly + 146);
+    ctx.fillText(isEn ? 'TEMPO (RPM)' : '音樂節奏 (RPM)', lx + 22, ly + 146);
+    ctx.fillText(isEn ? 'SPEED MULT' : '颱風移速倍率', lx + 140, ly + 146);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
@@ -1147,7 +1258,9 @@ class CyclonePulseApp {
     ctx.font = '500 12px -apple-system, sans-serif';
     ctx.fillText('RPM', lx + 82, ly + 178);
 
-    const speedStateLabel = moveMult >= 1.65 ? '疾衝' : moveMult >= 0.95 ? '推進' : '緩行';
+    const speedStateLabel = isEn
+      ? (moveMult >= 1.65 ? 'Sprint' : moveMult >= 0.95 ? 'Cruise' : 'Slow')
+      : (moveMult >= 1.65 ? '疾衝' : moveMult >= 0.95 ? '推進' : '緩行');
     ctx.fillStyle = moveMult >= 1.65 ? '#64d2ff' : '#ffffff';
     ctx.font = '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
     ctx.fillText(`${moveMult.toFixed(1)}x`, lx + 140, ly + 178);
@@ -1175,7 +1288,7 @@ class CyclonePulseApp {
       ctx.textAlign = 'center';
       ctx.fillStyle = isCurrent ? '#000000' : 'rgba(235, 235, 245, 0.55)';
       ctx.font = '700 12px -apple-system, sans-serif';
-      ctx.fillText(`${b}拍`, bx + beatBoxW / 2, beatBoxY + 16);
+      ctx.fillText(isEn ? `B${b}` : `${b}拍`, bx + beatBoxW / 2, beatBoxY + 16);
     }
 
     // 路徑進度細條
@@ -1190,7 +1303,7 @@ class CyclonePulseApp {
     ctx.fill();
 
     // =========================================================================
-    // 2. 右上：分數、連擊與操作膠囊（重設 textAlign='left' 並加寬面板，防止分數超出框外）
+    // 2. 右上：分數、連擊與操作膠囊
     // =========================================================================
     const rw = 284;
     const rx = w - rw - 28;
@@ -1207,8 +1320,8 @@ class CyclonePulseApp {
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(235, 235, 245, 0.45)';
     ctx.font = '500 11.5px -apple-system, sans-serif';
-    ctx.fillText('分數', rx + 22, ry + 28);
-    ctx.fillText('連擊', rx + 188, ry + 28);
+    ctx.fillText(isEn ? 'SCORE' : '分數', rx + 22, ry + 28);
+    ctx.fillText(isEn ? 'COMBO' : '連擊', rx + 188, ry + 28);
 
     const scoreStr = this.score.toLocaleString();
     ctx.fillStyle = '#ffffff';
@@ -1234,7 +1347,7 @@ class CyclonePulseApp {
     ctx.fillStyle = '#000000';
     ctx.font = '600 13px -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('完成並產出音樂', btnFinish.x + btnFinish.w / 2, btnFinish.y + 22);
+    ctx.fillText(isEn ? 'Finish & Export' : '完成並產出音樂', btnFinish.x + btnFinish.w / 2, btnFinish.y + 22);
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
     ctx.beginPath();
@@ -1243,11 +1356,14 @@ class CyclonePulseApp {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '500 12.5px -apple-system, sans-serif';
-    ctx.fillText(this.audio.isMuted ? '靜音' : '聲音開', btnMute.x + btnMute.w / 2, btnMute.y + 22);
+    ctx.fillText(
+      this.audio.isMuted ? (isEn ? 'Muted' : '靜音') : (isEn ? 'Sound' : '聲音開'),
+      btnMute.x + btnMute.w / 2,
+      btnMute.y + 22
+    );
 
     // =========================================================================
     // 3. 左下側邊欄：Apple 風格「上下左右 四向音色選擇面板 + 節拍提示」
-    //    移開原本位於畫面底部的提示列，完全不擋住下方巴士海峽與台灣周邊颱風路徑
     // =========================================================================
     const dockX = lx;
     const dockY = ly + lh + 14;
@@ -1264,11 +1380,11 @@ class CyclonePulseApp {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
     ctx.font = '600 14px -apple-system, sans-serif';
-    ctx.fillText('四向音色選擇 · 節拍對即得分', dockX + 20, dockY + 28);
+    ctx.fillText(isEn ? '4 Instruments · Any on Beat' : '四向音色選擇 · 節拍對即得分', dockX + 20, dockY + 28);
 
     ctx.fillStyle = 'rgba(235, 235, 245, 0.58)';
     ctx.font = '400 12px -apple-system, sans-serif';
-    ctx.fillText('白圈收縮至暴風眼時，按 ↑ ↓ ← → 或空白鍵', dockX + 20, dockY + 47);
+    ctx.fillText(isEn ? 'Hit ↑ ↓ ← → on shrinking ring' : '白圈收縮至暴風眼時，按 ↑ ↓ ← → 或空白鍵', dockX + 20, dockY + 47);
 
     const padX = dockX + 14;
     const padW = dockW - 28;
@@ -1303,12 +1419,12 @@ class CyclonePulseApp {
       // 右側音色名稱與副標題
       ctx.textAlign = 'left';
       ctx.fillStyle = isFlashing ? '#000000' : '#ffffff';
-      ctx.font = '600 16px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
-      ctx.fillText(inst.name, padX + 54, padY + 25);
+      ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
+      ctx.fillText(isEn ? inst.nameEn : inst.nameZh, padX + 54, padY + 25);
 
       ctx.fillStyle = isFlashing ? 'rgba(0, 0, 0, 0.65)' : 'rgba(235, 235, 245, 0.52)';
-      ctx.font = '400 11.5px -apple-system, sans-serif';
-      ctx.fillText(inst.sub, padX + 54, padY + 43);
+      ctx.font = '400 11px -apple-system, sans-serif';
+      ctx.fillText(isEn ? inst.subEn : inst.subZh, padX + 54, padY + 43);
     });
 
     ctx.restore();
