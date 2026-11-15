@@ -1,49 +1,91 @@
-# Cyclone Pulse：颱風數據節奏與氣象聲景網頁遊戲
-**2026 NASA International Space Apps Challenge — Challenge: [The Earth Information Jukebox](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/?tab=resources)**
+# Cyclone Pulse: Real-Time Typhoon Data Rhythm & Earth Sonification Game
+
+> **2026 NASA International Space Apps Challenge**  
+> **Challenge:** [The Earth Information Jukebox](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/?tab=resources)  
+> **Target Award:** *Art & Technology Award* / *Best Use of Data Award*
 
 ---
 
-## 專案簡介 (Project Summary)
-**《Cyclone Pulse》** 是一款結合 **NASA 地球觀測衛星資料**、**歷史侵台颱風實測氣象數據** 與 **Web Audio API 即時聲景合成 (Data Sonification)** 的互動式節奏音樂網頁遊戲。
-
-玩家可從 **10 個真實登陸台灣的代表性颱風**（丹娜絲、楊柳、樺加沙、康芮、山陀兒、凱米、小犬、海葵、蘇迪勒、莫拉克）中選擇關卡，觀察颱風沿真實經緯度路徑推進時的 **最大風速 (`m/s`)**、**中心氣壓 (`hPa`)** 與 **紅外線雲頂溫度 (`°C`)**，並在 **4/4 拍（一小節四拍 `1 - 2 - 3 - 4`）** 的動態節奏中自由使用方向鍵（`↑` 水晶鐘琴、`←` 溫暖電鋼琴、`→` 空靈拇指琴、`↓` 合成弦樂）演奏出獨一無二的颱風氣象聲景，遊戲結束後系統將 **100% 自動合成並提供專屬 `.WAV` Demo 音樂下載**。
-
----
-
-## 核心特色 (Key Features)
-1. **10 個真實登陸台灣歷史颱風關卡**：
-   - 完整收錄各颱風登陸台灣之 **年、月、日、時分**、登陸地點、最大風速 (`m/s`)、中心最低氣壓 (`hPa`) 與 10 張獨立 NASA 衛星雲圖。
-2. **氣象數據驅動之 4/4 四拍動態節奏與移速同步 (Data-Driven Tempo & Motion)**：
-   - **中心氣壓 (`hPa`)** 映射為重低音 Sub-Bass 共鳴深度；**最大風速 (`m/s`)** 同步驅動 **音樂節奏速度 (`68 ~ 172 RPM`)** 與 **颱風路徑移動倍率 (`0.4x 緩行 ~ 2.5x 疾衝`)**。
-   - 採用主時鐘相位鎖定 (`musicalBeatPos`)，讓 4/4 拍的每一小節四拍（`1拍 強拍 -> 2拍 反拍 -> 3拍 次強拍 -> 4拍 過門拍`）視覺收縮圈與音樂節拍 100% 精準對齊。
-3. **四向自由音色演奏 (`↑ ↓ ← →` 只要節拍對即得分)**：
-   - `↑` **水晶鐘琴 (Celeste Bell)**：清亮高音泛音
-   - `←` **溫暖電鋼琴 (Warm Rhodes)**：柔和爵士七和弦伴奏
-   - `→` **空靈拇指琴 (Kalimba Pluck)**：清脆木質顆粒彈撥
-   - `↓` **深海合成弦樂 (Analog Strings)**：渾厚溫暖中低音弦樂
-4. **全自動個人化 `.WAV` 音樂生成與下載**：
-   - 遊戲結算時，透過 `OfflineAudioContext` 自動將該場颱風的氣象數據曲線與玩家本局實際彈奏的四向音色序列渲染為高音質立體聲 `.WAV` 音檔，支援即時試聽與一鍵下載。
+## 🌐 Quick Links (重要連結)
+- **Live Interactive Demo (線上即時試玩):**  
+  👉 [https://benchiang7tw25.github.io/cyclone-pulse/](https://benchiang7tw25.github.io/cyclone-pulse/)
+- **Official 7-Slide Presentation Deck (官方 7 頁展示簡報):**  
+  👉 [https://benchiang7tw25.github.io/cyclone-pulse/slides.html](https://benchiang7tw25.github.io/cyclone-pulse/slides.html)
+- **Open Source Repository (GitHub 原始碼):**  
+  👉 [https://github.com/benchiang7tw25/cyclone-pulse](https://github.com/benchiang7tw25/cyclone-pulse)
 
 ---
 
-## 官方 NASA 資源使用清單 (NASA Official Resources Used)
-本專案嚴格遵循 [The Earth Information Jukebox 官方資源頁面](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/?tab=resources) 規範：
-- **NASA Earth Observatory / MODIS & VIIRS True-Color Imagery (Terra / Aqua / Suomi NPP)**：台灣真實地形衛星底圖與 10 個侵台颱風之真實衛星雲圖。
-- **NASA Scientific Visualization Studio (SVS)**：
-  - `SVS #5669`：GEOS-FP Global Aerosols & Typhoons (2025 丹娜絲、楊柳、樺加沙氣溶膠與氣旋視覺化)
-  - `SVS #4960`：IMERG Atmospheric Rivers & Precipitation
-  - `SVS #5313`：Black Marble HD Nighttime Lights (台灣夜間城市燈光分布)
-  - `SVS #3912`：ECCO2 Kuroshio Sea Surface Temperature & Ocean Currents (台灣東部黑潮海溫)
-  - `SVS #5011`：ISS LIS Global Lightning Flash Rate
-  - `SVS #4950`：GEDI Forest Canopy Height (中央山脈地形與林冠高度)
-- **NASA GIBS (Global Imagery Browse Services) & Worldview**：`WGS84 (EPSG:4326)` 台灣周邊海域 (`117.5°E–126.5°E, 19.3°N–26.7°N`) 地理座標投影。
+## 📖 Project Overview (專案簡介)
+**Cyclone Pulse** is an interactive, browser-based rhythm and atmospheric sonification game that translates NASA Earth observations and historical Western Pacific typhoon telemetry into music.
+
+Responding to NASA's **"The Earth Information Jukebox"** challenge, the project models **10 historic typhoons that made landfall in Taiwan**. Players navigate real-world storm tracks, where physical parameters—**wind speed (`m/s`)**, **central atmospheric pressure (`hPa`)**, and **infrared cloud-top temperatures (`°C`)**—directly drive dynamic musical tempos, sub-bass resonances, and storm velocity.
+
+### Key Highlights
+1. **Full Bilingual Support (🌐 English / 繁體中文):**  
+   Designed for both NASA Global Judges and local communities. Features a one-click language toggle on both the stage selection and result screens.
+2. **Phase-Locked 4/4 Rhythm Master Clock:**  
+   Structured into strict 4/4 measures (Beat 1: Downbeat Kick, Beat 2: Snare Clap, Beat 3: Driving Kick, Beat 4: Turnaround Fill). Contracting visual rings hit the eye in mathematical lockstep ($t = 1.000$) with the audio downbeats.
+3. **Four Spatial Performance Instruments:**  
+   Players can press any arrow key on beat to expressively perform across four distinct instruments:
+   - `↑` (UP): **Celeste Bell** (Crystal high-pitch overtones & chiming harmonics)
+   - `←` (LEFT): **Warm Rhodes** (Lush jazz 7th chord arpeggiations)
+   - `→` (RIGHT): **Kalimba Pluck** (Tactile woody pentatonic percussion)
+   - `↓` (DOWN): **Analog Strings** (Warm mid-range sustain & octave resonance)
+4. **Automated Personalized `.WAV` Export:**  
+   Upon stage completion, an in-browser `OfflineAudioContext` synthesis pipeline automatically renders a studio-grade, 16-second stereo `.WAV` soundtrack blending the typhoon's telemetry curve with the player’s unique instrument choices for instant playback and lossless download.
+5. **Apple-Grade Frosted Glass UI:**  
+   Pure macOS / Apple Weather aesthetic with dynamic satellite backdrop blur, SF Pro typography, and an unobstructed track layout.
 
 ---
 
-## 如何執行 (How to Run)
-本專案為純前端零依賴架構 (Zero-Build Vanilla HTML5 / CSS3 / Web Audio API)，支援離線直接開啟：
-1. 直接雙擊開啟 `index.html`，或使用任意靜態伺服器：
-   ```bash
-   python3 -m http.server 8080
-   ```
-2. 瀏覽器開啟 `http://localhost:8080` 即可遊玩（若部署於 GitHub Pages，可直接透過線上網址遊玩）。
+## 🌪️ 10 Historic Taiwan Landfall Typhoons (收錄歷史侵台颱風)
+All 10 stages incorporate exact landfall timestamps, locations, peak wind speeds, central pressures, and true NASA satellite images:
+1. **Fung-wong (鳳凰 · 2025):** Nov 12, 2025 at Hengchun, Pingtung (48 m/s, 930 hPa) — Breaks a 58-year late-season record.
+2. **Podul (楊柳 · 2025):** Aug 13, 2025 at Taimali, Taitung (43 m/s, 945 hPa) — 3-hour lightning mountain traversal.
+3. **Danas (丹娜絲 · 2025):** July 6, 2025 at Budai, Chiayi (40 m/s, 950 hPa) — First Chiayi landfall since 1958.
+4. **Kong-rey (康芮 · 2024):** Oct 31, 2024 at Chenggong, Taitung (51 m/s, 925 hPa) — 320km super-typhoon storm radius.
+5. **Krathon (山陀兒 · 2024):** Oct 3, 2024 at Xiaogang, Kaohsiung (55 m/s, 915 hPa) — Southwest offshore stalling & direct harbor strike.
+6. **Gaemi (凱米 · 2024):** July 25, 2024 at Nan’ao, Yilan (53 m/s, 920 hPa) — Counter-clockwise terrain deflection loop.
+7. **Koinu (小犬 · 2023):** Oct 5, 2023 at Eluanbi, Pingtung (51 m/s, 925 hPa) — All-time record 95.2 m/s wind gust at Orchid Island.
+8. **Haikui (海葵 · 2023):** Sept 3, 2023 at Donghe, Taitung (43 m/s, 945 hPa) — Double landfall ending a 1,471-day streak.
+9. **Soudelor (蘇迪勒 · 2015):** Aug 8, 2015 at Xiulin, Hualien (48 m/s, 930 hPa) — Island-wide severe wind gale.
+10. **Morakot (莫拉克 · 2009):** Aug 7, 2009 at Hualien City (40 m/s, 955 hPa) — Extreme catastrophic monsoon rainfall (>3,000 mm).
+
+---
+
+## 🛰️ Official NASA Data & Resources Used (大會指定 NASA 資源清單)
+In strict compliance with [NASA Space Apps Challenge: The Earth Information Jukebox Resources](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/?tab=resources):
+- **NASA Earth Observatory / MODIS & VIIRS True-Color Imagery (Terra / Aqua / Suomi NPP):**  
+  [https://earthobservatory.nasa.gov](https://earthobservatory.nasa.gov) — High-resolution base terrain and 10 individual storm vortex satellite covers.
+- **NASA SVS #5669:**  
+  [https://svs.gsfc.nasa.gov/5669](https://svs.gsfc.nasa.gov/5669) — GEOS-FP Global Aerosols & Western Pacific typhoons.
+- **NASA SVS #4960:**  
+  [https://svs.gsfc.nasa.gov/4960](https://svs.gsfc.nasa.gov/4960) — IMERG Global Precipitation & Atmospheric River moisture transport.
+- **NASA SVS #5313:**  
+  [https://svs.gsfc.nasa.gov/5313](https://svs.gsfc.nasa.gov/5313) — Black Marble HD Nighttime Lights for Taiwan urban night illumination.
+- **NASA SVS #3912:**  
+  [https://svs.gsfc.nasa.gov/3912](https://svs.gsfc.nasa.gov/3912) — ECCO2 Kuroshio Sea Surface Temperatures & Ocean Currents.
+- **NASA SVS #5011 & SVS #4950:**  
+  ISS LIS lightning flash densities and GEDI forest canopy / elevation models for mountain interactions.
+- **NASA GIBS & Worldview:**  
+  [https://worldview.earthdata.nasa.gov](https://worldview.earthdata.nasa.gov) — EPSG:4326 GIS coordinate projection for exact landfall tracking.
+
+---
+
+## 🛠️ Technology Stack & Architecture (技術架構)
+- **Zero-Dependency Architecture:** Pure Vanilla HTML5, CSS3, and JavaScript (ES6+). Zero build tools, zero external runtime libraries.
+- **Web Audio API (`AudioContext` & `OfflineAudioContext`):** Real-time synthesis featuring custom polyphonic oscillators, 4-pole biquad low-pass filters, dynamic waveshaping, algorithmic reverb convolution, and stereo ping-pong delay.
+- **Canvas 2D Rendering Engine:** High-DPR Retina support, particle vortex simulation, and phase-synchronized contraction rings.
+
+---
+
+## 🚀 How to Run Locally (本機執行)
+Simply double click `index.html` to open in any modern browser, or run a local static server:
+```bash
+# Python 3
+python3 -m http.server 8080
+
+# Open in browser
+open http://localhost:8080
+```

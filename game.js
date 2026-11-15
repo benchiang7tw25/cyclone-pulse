@@ -96,11 +96,30 @@ class CyclonePulseApp {
     this._updateLanguageUI();
     this._initSelectScreen();
     this._updateHeroBanner();
+    if (this.currentScreen === 'RESULT') {
+      const ty = this.selectedTyphoon;
+      const totalNotes = this.stats.PERFECT + this.stats.GREAT + this.stats.GOOD + this.stats.MISS;
+      const weightedHits = this.stats.PERFECT * 1.0 + this.stats.GREAT * 0.82 + this.stats.GOOD * 0.55;
+      const accuracy = totalNotes > 0 ? Math.round((weightedHits / totalNotes) * 100) : 100;
+      let rank = 'B';
+      if (accuracy >= 85 && this.score >= 2800) rank = 'S';
+      else if (accuracy >= 68 || this.score >= 1600) rank = 'A';
+      else if (accuracy < 40 && totalNotes > 6) rank = 'C';
+      document.getElementById('resCritiqueText').textContent = this._buildCritiqueText(ty, rank, accuracy, this.maxCombo);
+    }
+  }
+
+  setLanguage(lang = 'EN') {
+    this.currentLang = lang;
+    this._updateLanguageUI();
+    this._initSelectScreen();
+    this._updateHeroBanner();
   }
 
   _updateLanguageUI() {
     const isEn = this.currentLang === 'EN';
-    const langBtnText = isEn ? '🌐 EN / 中文' : '🌐 中文 / EN';
+    // 按鈕文字：清楚標示「點擊後要切換到的目標語言」
+    const langBtnText = isEn ? '🌐 繁體中文' : '🌐 English';
     const toggleBtn1 = document.getElementById('btnLangToggle');
     const toggleBtn2 = document.getElementById('btnLangToggleResult');
     if (toggleBtn1) toggleBtn1.textContent = langBtnText;
@@ -158,6 +177,8 @@ class CyclonePulseApp {
         : '已根據本場颱風氣壓、風速與你演奏的四向音色自動合成。';
     }
     if (el('btnRegenerateMusic')) el('btnRegenerateMusic').textContent = isEn ? 'New Arrangement' : '換一版編曲';
+    if (el('btnDownloadWav')) el('btnDownloadWav').textContent = isEn ? 'Download Audio (.WAV)' : '下載音訊 (.WAV)';
+  }
     if (el('btnDownloadWav')) el('btnDownloadWav').textContent = isEn ? 'Download Audio (.WAV)' : '下載音訊 (.WAV)';
   }
 
@@ -635,11 +656,21 @@ class CyclonePulseApp {
   _bindEvents() {
     window.addEventListener('resize', () => this._resizeGameCanvas());
 
-    const toggleLangHandler = () => this.toggleLanguage();
+    const toggleLangHandler = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.toggleLanguage();
+    };
     const btnL1 = document.getElementById('btnLangToggle');
     const btnL2 = document.getElementById('btnLangToggleResult');
-    if (btnL1) btnL1.addEventListener('click', toggleLangHandler);
-    if (btnL2) btnL2.addEventListener('click', toggleLangHandler);
+    if (btnL1) {
+      btnL1.onclick = toggleLangHandler;
+    }
+    if (btnL2) {
+      btnL2.onclick = toggleLangHandler;
+    }
 
     const rulesModal = document.getElementById('rulesModal');
     const openRules = () => rulesModal.classList.add('open');
