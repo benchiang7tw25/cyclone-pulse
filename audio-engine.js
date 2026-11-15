@@ -62,6 +62,18 @@ class CycloneAudioEngine {
         { rootBass: 65.41, subBass: 65.41, pad: [261.63, 329.63, 392.00, 523.25], arp: [523.25, 659.25, 783.99, 1046.50, 1318.51] },
         { rootBass: 73.42, subBass: 36.71, pad: [293.66, 349.23, 440.00, 523.25], arp: [587.33, 698.46, 880.00, 1046.50, 1174.66] },
         { rootBass: 58.27, subBass: 58.27, pad: [233.08, 349.23, 440.00, 587.33], arp: [466.16, 587.33, 698.46, 880.00, 1174.66] }
+      ],
+      synthwave: [
+        { rootBass: 110.00, subBass: 55.00, pad: [220.00, 261.63, 329.63, 440.00], arp: [440.00, 523.25, 659.25, 880.00, 1046.50] },
+        { rootBass: 87.31, subBass: 43.65, pad: [174.61, 261.63, 349.23, 440.00], arp: [349.23, 523.25, 698.46, 880.00, 1046.50] },
+        { rootBass: 65.41, subBass: 65.41, pad: [261.63, 329.63, 392.00, 523.25], arp: [523.25, 659.25, 783.99, 1046.50, 1318.51] },
+        { rootBass: 98.00, subBass: 49.00, pad: [196.00, 293.66, 392.00, 493.88], arp: [392.00, 587.33, 783.99, 987.77, 1174.66] }
+      ],
+      lofi: [
+        { rootBass: 73.42, subBass: 36.71, pad: [293.66, 349.23, 440.00, 659.25], arp: [349.23, 440.00, 587.33, 659.25, 880.00] },
+        { rootBass: 98.00, subBass: 49.00, pad: [246.94, 329.63, 392.00, 698.46], arp: [392.00, 493.88, 587.33, 698.46, 987.77] },
+        { rootBass: 65.41, subBass: 65.41, pad: [261.63, 329.63, 392.00, 493.88], arp: [493.88, 523.25, 659.25, 783.99, 987.77] },
+        { rootBass: 110.00, subBass: 55.00, pad: [220.00, 261.63, 329.63, 523.25], arp: [440.00, 523.25, 659.25, 880.00, 1046.50] }
       ]
     };
 
@@ -859,90 +871,341 @@ class CycloneAudioEngine {
       const windNorm = Math.max(0, Math.min(1.15, (windMs - 15) / 40));
       const coldNorm = Math.max(0.2, Math.min(1.0, (-cloudTemp - 45) / 41));
 
-      // 隨颱風路徑風速即時變速 (72 ~ 168 BPM)
-      const localBpm = Math.max(72, Math.min(168, Math.round(72 + Math.pow(windNorm, 1.15) * 92)));
+      // 各編曲風格專屬之基礎速度與風速動態範圍
+      let styleBaseBpm = 92;
+      let styleBpmRange = 28;
+      if (styleKey === 'dnb') { styleBaseBpm = 160; styleBpmRange = 16; }
+      else if (styleKey === 'techno') { styleBaseBpm = 126; styleBpmRange = 12; }
+      else if (styleKey === 'synthwave') { styleBaseBpm = 112; styleBpmRange = 16; }
+      else if (styleKey === 'lofi') { styleBaseBpm = 74; styleBpmRange = 10; }
+      else if (styleKey === 'ambient') { styleBaseBpm = 68; styleBpmRange = 10; }
+      else { styleBaseBpm = 88; styleBpmRange = 26; }
+
+      const localBpm = Math.round(styleBaseBpm + Math.pow(windNorm, 1.15) * styleBpmRange);
       const beatSec = 60 / localBpm;
       const beatInBar = beatIdx % 4;
 
       const chord = prog[Math.floor(beatIdx / 4) % prog.length];
 
-      if (beatInBar === 0) {
-        this._playWarmPadChord(offlineCtx, master, reverb, {
-          time: cursorTime,
-          duration: beatSec * 3.85,
-          freqs: chord.pad,
-          bassWeight,
-          gain: 0.06 + bassWeight * 0.03
-        });
-
+      if (styleKey === 'techno') {
+        // --- 1. 深層脈衝 TECHNO (4-on-the-floor 重低音大鼓、反拍 Open Hi-hat、推進 16 分音符 Bass) ---
         this._playStudioKick(offlineCtx, master, {
           time: cursorTime,
-          bassWeight,
-          gain: 0.42
+          bassWeight: Math.max(0.65, bassWeight),
+          gain: 0.46
         });
 
+        if (beatInBar === 1 || beatInBar === 3) {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime,
+            gain: 0.22
+          });
+        }
+
+        // 反拍 Open Hi-hat
+        this._playSoftShaker(offlineCtx, master, {
+          time: cursorTime + beatSec * 0.5,
+          gain: 0.12 + windNorm * 0.05
+        });
+
+        // 奔馳 16 分音符低音
         this._playQuantizedBassNote(offlineCtx, master, {
           time: cursorTime,
-          duration: beatSec * 0.9,
+          duration: beatSec * 0.44,
           freq: chord.rootBass,
           bassWeight,
-          gain: 0.24 + bassWeight * 0.1
+          gain: 0.28
         });
-      } else if (beatInBar === 1) {
-        this._playCrispSnareClap(offlineCtx, master, reverb, {
-          time: cursorTime,
-          gain: 0.16 + windNorm * 0.07
+        this._playQuantizedBassNote(offlineCtx, master, {
+          time: cursorTime + beatSec * 0.5,
+          duration: beatSec * 0.4,
+          freq: (seed % 2 === 0) ? chord.rootBass * 1.5 : chord.rootBass * 2,
+          bassWeight,
+          gain: 0.22
         });
 
+        const arp = chord.arp;
+        const noteFreq = arp[(beatIdx * 2 + (seed % arp.length)) % arp.length];
+        this._playBellPianoNote(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.25,
+          duration: 0.25,
+          freq: noteFreq,
+          gain: 0.08
+        });
+        if (beatInBar === 0) {
+          this._playWarmPadChord(offlineCtx, master, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.8,
+            freqs: chord.pad,
+            bassWeight,
+            gain: 0.05
+          });
+        }
+      } else if (styleKey === 'dnb') {
+        // --- 2. 疾速破風 DRUM & BASS (160+ BPM 碎拍節奏、切分大鼓、極速 Shaker、厚重 Reese Bass) ---
+        if (beatInBar === 0) {
+          this._playStudioKick(offlineCtx, master, {
+            time: cursorTime,
+            bassWeight,
+            gain: 0.48
+          });
+        } else if (beatInBar === 2) {
+          this._playStudioKick(offlineCtx, master, {
+            time: cursorTime + beatSec * 0.5,
+            bassWeight,
+            gain: 0.42
+          });
+        }
+
+        if (beatInBar === 1 || beatInBar === 3) {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime,
+            gain: 0.28
+          });
+        }
+
+        for (let s = 0; s < 4; s++) {
+          this._playSoftShaker(offlineCtx, master, {
+            time: cursorTime + beatSec * (s * 0.25),
+            gain: s === 2 ? 0.09 : 0.04
+          });
+        }
+
+        if (beatInBar === 0 || beatInBar === 2) {
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 1.8,
+            freq: chord.rootBass,
+            bassWeight: Math.max(0.7, bassWeight),
+            gain: 0.30
+          });
+        }
+
+        if (beatInBar === 0) {
+          this._playAnalogStringVoice(offlineCtx, master, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.9,
+            freq: chord.pad[0],
+            gain: 0.09
+          });
+        }
+        const arp = chord.arp;
+        const noteFreq = arp[(beatIdx * 3 + seed) % arp.length];
+        this._playKalimbaPluck(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.75,
+          freq: noteFreq,
+          coldNorm,
+          gain: 0.08
+        });
+      } else if (styleKey === 'synthwave') {
+        // --- 3. 復古霓虹 SYNTHWAVE (80s 八度跳躍 Bass、大氣 Gated 混響小鼓、類比合成和弦) ---
+        if (beatInBar === 0) {
+          this._playStudioKick(offlineCtx, master, { time: cursorTime, bassWeight, gain: 0.44 });
+          this._playWarmPadChord(offlineCtx, master, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.8,
+            freqs: chord.pad,
+            bassWeight,
+            gain: 0.08
+          });
+        } else if (beatInBar === 2) {
+          this._playStudioKick(offlineCtx, master, { time: cursorTime, bassWeight, gain: 0.40 });
+        }
+
+        if (beatInBar === 1 || beatInBar === 3) {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime,
+            gain: 0.32
+          });
+        }
+
+        // 80年代經典八度抽蓄低音 (Octave Pumping Bass)
         this._playQuantizedBassNote(offlineCtx, master, {
           time: cursorTime,
-          duration: beatSec * 0.75,
+          duration: beatSec * 0.42,
+          freq: chord.rootBass,
+          bassWeight,
+          gain: 0.28
+        });
+        this._playQuantizedBassNote(offlineCtx, master, {
+          time: cursorTime + beatSec * 0.5,
+          duration: beatSec * 0.42,
           freq: chord.rootBass * 2,
           bassWeight,
-          gain: 0.16 + bassWeight * 0.07
-        });
-      } else if (beatInBar === 2) {
-        this._playStudioKick(offlineCtx, master, {
-          time: cursorTime,
-          bassWeight,
-          gain: 0.36
+          gain: 0.24
         });
 
-        this._playQuantizedBassNote(offlineCtx, master, {
+        const arp = chord.arp;
+        const noteFreq = arp[(beatIdx + (seed % arp.length)) % arp.length];
+        this._playCelesteBell(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.25,
+          duration: 0.6,
+          freq: noteFreq,
+          gain: 0.09
+        });
+      } else if (styleKey === 'lofi') {
+        // --- 4. 低傳真夜雨 LOFI CHILLHOP (微搖擺 Swing 節奏、溫暖爵士電鋼琴、鬆弛雨夜氛圍) ---
+        const swing = (beatInBar % 2 === 1) ? 0.025 : 0;
+        if (beatInBar === 0) {
+          this._playStudioKick(offlineCtx, master, { time: cursorTime, bassWeight, gain: 0.34 });
+          this._playBellPianoNote(offlineCtx, master, delay, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.5,
+            freq: chord.pad[0],
+            gain: 0.12
+          });
+          this._playBellPianoNote(offlineCtx, master, delay, reverb, {
+            time: cursorTime + 0.03,
+            duration: beatSec * 3.5,
+            freq: chord.pad[2],
+            gain: 0.10
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 1.6,
+            freq: chord.rootBass,
+            bassWeight,
+            gain: 0.22
+          });
+        } else if (beatInBar === 2) {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime + swing,
+            gain: 0.14
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 1.5,
+            freq: chord.rootBass * 1.5,
+            bassWeight,
+            gain: 0.18
+          });
+        } else {
+          this._playSoftShaker(offlineCtx, master, {
+            time: cursorTime + swing,
+            gain: 0.05
+          });
+        }
+
+        const arp = chord.arp;
+        const noteFreq = arp[(seed + beatIdx) % arp.length];
+        this._playKalimbaPluck(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.5 + swing,
+          freq: noteFreq,
+          coldNorm: 0.5,
+          gain: 0.08
+        });
+      } else if (styleKey === 'ambient') {
+        // --- 5. 失重漂浮 AMBIENT (極簡超低音脈衝、微風聲景、水晶長混響) ---
+        if (beatInBar === 0) {
+          this._playStudioKick(offlineCtx, master, {
+            time: cursorTime,
+            bassWeight: 0.9,
+            gain: 0.28
+          });
+          this._playWarmPadChord(offlineCtx, master, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.9,
+            freqs: chord.pad,
+            bassWeight,
+            gain: 0.12
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 3.5,
+            freq: chord.subBass || chord.rootBass,
+            bassWeight,
+            gain: 0.25
+          });
+        }
+
+        this._playSoftShaker(offlineCtx, master, {
           time: cursorTime,
-          duration: beatSec * 0.85,
-          freq: chord.rootBass * 1.5,
-          bassWeight,
-          gain: 0.20 + bassWeight * 0.08
+          gain: 0.02
+        });
+
+        const arp = chord.arp;
+        const noteFreq = arp[(beatIdx * 2 + seed) % arp.length];
+        this._playCelesteBell(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.5,
+          duration: 1.2,
+          freq: noteFreq,
+          gain: 0.07
         });
       } else {
-        this._playCrispSnareClap(offlineCtx, master, reverb, {
+        // --- 6. 空靈大氣五聲 PENTATONIC (太鼓式重拍、自然風音、溫暖和聲) ---
+        if (beatInBar === 0) {
+          this._playWarmPadChord(offlineCtx, master, reverb, {
+            time: cursorTime,
+            duration: beatSec * 3.85,
+            freqs: chord.pad,
+            bassWeight,
+            gain: 0.07 + bassWeight * 0.03
+          });
+          this._playStudioKick(offlineCtx, master, {
+            time: cursorTime,
+            bassWeight,
+            gain: 0.42
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 0.9,
+            freq: chord.rootBass,
+            bassWeight,
+            gain: 0.24 + bassWeight * 0.1
+          });
+        } else if (beatInBar === 1) {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime,
+            gain: 0.16 + windNorm * 0.07
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 0.75,
+            freq: chord.rootBass * 2,
+            bassWeight,
+            gain: 0.16 + bassWeight * 0.07
+          });
+        } else if (beatInBar === 2) {
+          this._playStudioKick(offlineCtx, master, {
+            time: cursorTime,
+            bassWeight,
+            gain: 0.36
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 0.85,
+            freq: chord.rootBass * 1.5,
+            bassWeight,
+            gain: 0.20 + bassWeight * 0.08
+          });
+        } else {
+          this._playCrispSnareClap(offlineCtx, master, reverb, {
+            time: cursorTime,
+            gain: 0.18 + windNorm * 0.08
+          });
+          this._playQuantizedBassNote(offlineCtx, master, {
+            time: cursorTime,
+            duration: beatSec * 0.45,
+            freq: chord.rootBass * 2,
+            bassWeight,
+            gain: 0.16 + bassWeight * 0.07
+          });
+        }
+
+        this._playSoftShaker(offlineCtx, master, {
           time: cursorTime,
-          gain: 0.18 + windNorm * 0.08
+          gain: 0.06
         });
 
-        this._playQuantizedBassNote(offlineCtx, master, {
-          time: cursorTime,
-          duration: beatSec * 0.45,
-          freq: chord.rootBass * 2,
-          bassWeight,
-          gain: 0.16 + bassWeight * 0.07
+        const arp = chord.arp;
+        const idxA = (beatIdx * 2 + seed) % arp.length;
+        this._playKalimbaPluck(offlineCtx, master, delay, reverb, {
+          time: cursorTime + beatSec * 0.5,
+          freq: arp[idxA],
+          coldNorm,
+          gain: 0.075
         });
       }
-
-      this._playSoftShaker(offlineCtx, master, {
-        time: cursorTime,
-        gain: 0.06
-      });
-
-      const arp = chord.arp;
-      const idxA = (beatIdx * 2 + seed) % arp.length;
-      this._playKalimbaPluck(offlineCtx, master, delay, reverb, {
-        time: cursorTime + beatSec * 0.5,
-        freq: arp[idxA],
-        coldNorm,
-        gain: 0.075
-      });
 
       cursorTime += beatSec;
       beatIdx++;
@@ -981,12 +1244,23 @@ class CycloneAudioEngine {
     const wavBlob = this._audioBufferToWavBlob(renderedBuffer);
     const audioUrl = URL.createObjectURL(wavBlob);
 
+    const STYLE_META = {
+      pentatonic: { zh: '空靈大氣 (Ambient Cinematic)', en: 'Ambient Cinematic' },
+      techno: { zh: '深層脈衝 (Deep Pulse Techno)', en: 'Deep Pulse Techno' },
+      dnb: { zh: '疾速破風 (Drum & Bass Breakbeat)', en: 'Drum & Bass Breakbeat' },
+      synthwave: { zh: '復古霓虹 (80s Retrowave)', en: '80s Retrowave' },
+      lofi: { zh: '低傳真夜雨 (Lofi Chillhop)', en: 'Lofi Chillhop' },
+      ambient: { zh: '失重漂浮 (Ethereal Ambient)', en: 'Ethereal Ambient' }
+    };
+
     return {
       blob: wavBlob,
       url: audioUrl,
       durationSec,
       waveformPeaks,
-      filename: `CyclonePulse_${typhoonData.nameEn}_Demo_${seed % 1000}.wav`
+      styleKey,
+      styleMeta: STYLE_META[styleKey] || { zh: styleKey, en: styleKey },
+      filename: `CyclonePulse_${typhoonData.nameEn}_${styleKey}_${seed % 1000}.wav`
     };
   }
 
