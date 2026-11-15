@@ -179,8 +179,6 @@ class CyclonePulseApp {
     if (el('btnRegenerateMusic')) el('btnRegenerateMusic').textContent = isEn ? 'New Arrangement' : '換一版編曲';
     if (el('btnDownloadWav')) el('btnDownloadWav').textContent = isEn ? 'Download Audio (.WAV)' : '下載音訊 (.WAV)';
   }
-    if (el('btnDownloadWav')) el('btnDownloadWav').textContent = isEn ? 'Download Audio (.WAV)' : '下載音訊 (.WAV)';
-  }
 
   _initAssets() {
     const loadImg = (key, path, onLoadCallback) => {
